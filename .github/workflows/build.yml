@@ -1,0 +1,141 @@
+name: Build
+
+# Bouwt Bingr voor LG webOS TV: de gedeelde Samsung TV-code uit LRvdLinden/bingr-android (openbaar, anoniem op de
+# vaste commit uit upstream.properties) plus de platformlaag uit deze repo, test hem (unittests, de logica-tests van de
+# gedeelde code, compatibiliteit, headless-Chromium-rooktest met een neppe backend), pakt hem in tot een .ipk met de
+# webOS CLI (@webos-tools/cli, vaste versie in package-lock.json) en levert die VERSLEUTELD aan bij de privé repo
+# LRvdLinden/bingr-inbox (tools/seal_build.sh van bingr-beheer, platform webos). De workflow Builds van bingr-beheer
+# zet hem in de afgesloten map builds/ op de server; downloaden alleen via het beheer.
+# Buildpakketten komen NOOIT op GitHub: geen artefact, geen release, niet in een repo. De branch ci-logs bevat alleen
+# logboeken en schermafbeeldingen van de rooktest (neppe gegevens). Geen secrets nodig behalve BINGR_INBOX_TOKEN.
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['docs/**', '**/*.md']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  webos:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5 (v5.1.0)
+
+      - name: Logmap
+        run: mkdir -p "$RUNNER_TEMP/logs"
+
+      - name: Versie en build controleren
+        run: |
+          set -eo pipefail
+          python3 tools/set_version.py --check | tee "$RUNNER_TEMP/logs/version.log"
+          V=$(grep '^BINGR_VERSION=' version.properties | cut -d= -f2); B=$(grep '^BINGR_BUILD=' version.properties | cut -d= -f2)
+          echo "BINGR_VERSION=$V" >> "$GITHUB_ENV"; echo "BINGR_BUILD=$B" >> "$GITHUB_ENV"
+          echo "::notice title=Versie::Bingr voor LG webOS TV $V (build $B), gedeelde code bingr-android@$(grep '^UPSTREAM_COMMIT=' upstream.properties | cut -d= -f2 | cut -c1-12)"
+
+      - name: npm-pakketten (webOS CLI, mpegts.js, terser, acorn)
+        run: |
+          set -eo pipefail
+          node --version
+          npm ci --no-audit --no-fund 2>&1 | tail -5
+
+      - name: Scripts controleren (syntaxis)
+        run: |
+          set -e
+          for f in platform/*.js test/*.js; do node --check "$f"; done
+          python3 -m py_compile tools/*.py test/*.py
+
+      - name: App bouwen (gedeelde code + platformlaag)
+        run: |
+          set -eo pipefail
+          python3 tools/build_app.py build/app 2>&1 | tee "$RUNNER_TEMP/logs/build.log"
+          # oude tv's: ES2017 en geen API's/CSS die Chromium M56 niet kent (zelfde controle als de Samsung TV-app)
+          NODE_PATH="$PWD/node_modules" node .upstream/tizen/tools/check_compat.js build/app 2>&1 | tee "$RUNNER_TEMP/logs/compat.log"
+
+      - name: Unittests (platformlaag)
+        run: |
+          set -eo pipefail
+          node test/platform_test.js 2>&1 | tee "$RUNNER_TEMP/logs/unit.log"
+          echo "::notice title=Unittests webOS::$(tail -1 "$RUNNER_TEMP/logs/unit.log")"
+
+      - name: Logica-tests van de gedeelde code (op de vaste commit)
+        run: |
+          set -eo pipefail
+          for t in .upstream/tizen/test/*_test.js; do
+            node "$t" 2>&1 | tee -a "$RUNNER_TEMP/logs/shared.log"
+            echo "::notice title=$(basename "$t")::$(tail -1 "$RUNNER_TEMP/logs/shared.log")"
+          done
+
+      - name: .ipk bouwen (ares-package)
+        run: |
+          set -eo pipefail
+          bash tools/package.sh build/app dist 2>&1 | tee "$RUNNER_TEMP/logs/package.log"
+          IPK="$PWD/dist/Bingr-$BINGR_VERSION-build$BINGR_BUILD.ipk"
+          [ -s "$IPK" ] || { echo "::error::geen .ipk"; exit 1; }
+          echo "IPK=$IPK" >> "$GITHUB_ENV"
+          echo "::notice title=.ipk::$(basename "$IPK"): $(du -h "$IPK" | cut -f1), SHA-256 $(sha256sum "$IPK" | cut -c1-64)"
+
+      - name: Rooktest (headless Chromium, neppe backend)
+        run: |
+          set -eo pipefail
+          python3 -m pip install --quiet --disable-pip-version-check playwright==1.56.0 pillow==11.3.0 2>&1 | tail -3
+          python3 -m playwright install --with-deps chromium > "$RUNNER_TEMP/logs/playwright.log" 2>&1 || { tail -20 "$RUNNER_TEMP/logs/playwright.log"; exit 1; }
+          python3 test/smoke.py "$RUNNER_TEMP/smoke" build/app 2>&1 | tee "$RUNNER_TEMP/logs/smoke.log"
+          echo "::notice title=Rooktest::$(tail -1 "$RUNNER_TEMP/logs/smoke.log")"
+          cp "$RUNNER_TEMP"/smoke/webos-*.png "$RUNNER_TEMP/logs/" 2>/dev/null || true
+
+      # Pakketten staan nooit (onversleuteld) op GitHub. Versleuteld naar de PRIVÉ repo LRvdLinden/bingr-inbox
+      # (tools/seal_build.sh van bingr-beheer, anoniem gekloond; branch inbox-webos). Nodig: secret BINGR_INBOX_TOKEN
+      # (fine-grained, alleen Contents: Read and write op bingr-inbox). Het token gaat nooit in een URL.
+      - name: .ipk versleuteld aanleveren voor beheer.bingr.online
+        if: success() && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        env:
+          TOKEN: ${{ secrets.BINGR_INBOX_TOKEN }}
+          BINGR_INBOX_REPO: LRvdLinden/bingr-inbox
+        run: |
+          set -euo pipefail
+          TOKEN=$(printf '%s' "${TOKEN:-}" | tr -d '[:space:]')
+          # bewust geen terugval op een ander token: zonder BINGR_INBOX_TOKEN wordt er niets aangeleverd
+          if [ -z "$TOKEN" ]; then
+            echo "::notice::Secret BINGR_INBOX_TOKEN ontbreekt: .ipk niet aangeleverd (zie README.md)."
+            exit 0
+          fi
+          V="$BINGR_VERSION"; B="$BINGR_BUILD"
+          pkg="$RUNNER_TEMP/pkg"; mkdir -p "$pkg"
+          cp "$IPK" "$pkg/Bingr-$V-build$B.ipk"
+          # notities uit CHANGELOG.md (sectie van dit buildnummer; gemaakt met tools/make_changelog.py --webos in iptv-ios-appletv)
+          awk -v b="Build $B" '/^## /{f=($0 ~ (b "$"))?1:0; next} f && !/^_.*_$/' CHANGELOG.md > "$pkg/notes.md" 2>/dev/null || true
+          [ -s "$pkg/notes.md" ] || echo "Bingr $V, build $B." > "$pkg/notes.md"
+          GIT_TERMINAL_PROMPT=0 git clone -q --depth 1 https://github.com/LRvdLinden/bingr-beheer.git "$RUNNER_TEMP/beheer" 2>/dev/null \
+            || { echo "::error::bingr-beheer niet op te halen."; exit 1; }
+          # zolang seal_build.sh platform webos nog niet kent: niets aanleveren, wel groen
+          if ! grep -qE '^case "\$plat" in [^)]*\bwebos\b' "$RUNNER_TEMP/beheer/tools/seal_build.sh"; then
+            echo "::notice::seal_build.sh in bingr-beheer kent platform webos nog niet: .ipk niet aangeleverd."
+            rm -rf "$pkg"; exit 0
+          fi
+          TOKEN="$TOKEN" "$RUNNER_TEMP/beheer/tools/seal_build.sh" webos "$pkg/Bingr-$V-build$B.ipk" "$V" "$B" "$pkg/notes.md"
+          rm -rf "$pkg"
+
+      - name: Pakket opruimen
+        if: always()
+        run: rm -rf dist build/app
+
+      # niet bij pull requests (die mogen de branch ci-logs niet overschrijven); alleen logboeken en schermafbeeldingen
+      - name: Log op branch ci-logs zetten
+        if: always() && github.event_name != 'pull_request'
+        run: |
+          set +e
+          L="$RUNNER_TEMP/logs"; mkdir -p "$L"
+          echo "${{ job.status }} $(git rev-parse --short HEAD) build ${BINGR_BUILD:-?}" > "$L/status.txt"
+          cp "$L/status.txt" "$L/latest.txt"
+          cd "$L" && git init -q -b ci-logs && git add -A
+          git -c user.name=github-actions -c user.email=actions@github.com commit -qm "CI-log $(cat status.txt)"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" ci-logs

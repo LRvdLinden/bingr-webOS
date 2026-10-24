@@ -1,0 +1,5 @@
+/* Bingr voor LG webOS TV: aanvulling op css/app.css (gedeelde Samsung TV-stijl). Magic Remote: de cursor wijst
+   alles aan wat focus kan krijgen; aanwijzen = focus (zie js/webos/webos.js), dus de focusstijl blijft dezelfde. */
+.f { cursor: pointer; }
+/* geen plugin-vak voor Samsung AVPlay */
+#av-player { display: none; }

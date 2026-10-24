@@ -1,0 +1,20 @@
+{
+  "name": "bingr-webos",
+  "version": "1.0.147",
+  "private": true,
+  "description": "Bingr voor LG webOS TV (web-app op basis van de Samsung TV-app in bingr-android/tizen)",
+  "license": "UNLICENSED",
+  "scripts": {
+    "build": "python3 tools/build_app.py",
+    "test": "node test/platform_test.js",
+    "package": "bash tools/package.sh"
+  },
+  "devDependencies": {
+    "@webos-tools/cli": "3.2.6",
+    "acorn": "8.14.0",
+    "acorn-walk": "8.3.4",
+    "mpegts.js": "1.8.0",
+    "terser": "5.36.0"
+  },
+  "engines": { "node": ">=20" }
+}

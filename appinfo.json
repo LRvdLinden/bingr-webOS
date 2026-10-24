@@ -1,0 +1,18 @@
+{
+  "id": "nl.lrvdlinden.bingr",
+  "version": "1.0.147",
+  "vendor": "Bingr",
+  "type": "web",
+  "main": "index.html",
+  "title": "Bingr",
+  "icon": "icon.png",
+  "largeIcon": "largeIcon.png",
+  "splashBackground": "splash.png",
+  "bgColor": "#0f0103",
+  "resolution": "1920x1080",
+  "disableBackHistoryAPI": true,
+  "handlesRelaunch": true,
+  "uiRevision": 2,
+  "requiredMemory": 400,
+  "requiredACG": ["systemconfig.query", "network.query"]
+}

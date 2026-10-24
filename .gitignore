@@ -1,0 +1,6 @@
+node_modules/
+.upstream/
+build/
+dist/
+*.ipk
+__pycache__/

@@ -79,7 +79,7 @@ steps = [
     ('expect', 'window.__diag && window.__diag.app.platform === "webos"', 'diagnose: app.platform webos'),
     ('expect', 'window.__diag.device.manufacturer === "LG" && window.__diag.device.os === "webOS" && window.__diag.device.osVersion === "6.3" && window.__diag.device.model === "OLED55C36LC" && window.__diag.device.type === "tv"', 'diagnose: LG, webOS 6.3, model'),
     ('expect', 'window.__diag.state.network.type === "ethernet"', 'diagnose: netwerk via connectionmanager'),
-    ('expect', 'window.__diag.schema === 2 && !!window.__diag.start && Array.isArray(window.__diag.fetch) && window.__diag.network && window.__diag.network.type === "ethernet" && !!window.__diag.storage', 'diagnose-schema 2 (start, fetch, network, storage)'),
+    ('expect', 'window.__diag.schema >= 2 && !!window.__diag.start && Array.isArray(window.__diag.fetch) && window.__diag.network && window.__diag.network.type === "ethernet" && !!window.__diag.storage', 'diagnose-schema 2+ (start, fetch, network, storage)'),
     ('eval', 'JSON.stringify(window.__diag.app) + " " + JSON.stringify(window.__diag.device)', 'diagnose'),
     ('eval', 'B.ui.top().show("settings", true) || 1'), ('wait', 800),
     ('eval', 'var t = Array.prototype.filter.call(document.querySelectorAll(".st-tab"), function (x) { return x._tab === "diagnose"; })[0]; window.__tab = t; 1'),

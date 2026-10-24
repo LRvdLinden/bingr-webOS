@@ -178,6 +178,9 @@
     return out;
   };
 
+  /** Vertaalde Samsung-tekst als LG-tekst: het merk vervangen ("Samsung TV" → "LG TV", "téléviseur Samsung" → "téléviseur LG"). */
+  W.toLG = function (t) { return String(t == null ? '' : t).replace(/Samsung/g, 'LG'); };
+
   /** Platformnaam voor mensen en het icoon (apparatenlijst, Nu aan het kijken). */
   W.isWebOSPlatform = function (p) { return /^(webos|lg ?tv)$/i.test(String(p || '').trim()); };
 

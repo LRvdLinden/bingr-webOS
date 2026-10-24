@@ -107,7 +107,7 @@ def main():
     print('patches: %d toegepast' % n)
 
     os.makedirs(os.path.join(out, 'js', 'webos'))
-    for f in ('webos-logic.js', 'webos.js'):
+    for f in ('webos-logic.js', 'webos-platform.js', 'webos.js'):
         shutil.copy(os.path.join(ROOT, 'platform', f), os.path.join(out, 'js', 'webos', f))
     shutil.copy(os.path.join(ROOT, 'platform', 'webos.css'), os.path.join(out, 'css', 'webos.css'))
 

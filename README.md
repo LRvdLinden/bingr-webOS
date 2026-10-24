@@ -9,7 +9,7 @@ Wat erin zit is gelijk aan de Samsung TV-app: zie [bingr-android/tizen](https://
 
 De app is een web-app (HTML5) en gebruikt de code van de Samsung TV-app, zodat functies en uiterlijk gelijk blijven:
 
-- `tools/build_app.py` haalt `tizen/` uit de openbare repo [bingr-android](https://github.com/LRvdLinden/bingr-android) op **precies de commit** uit `upstream.properties` (anoniem, geen token), past de kleine tekstvervangingen uit `platform/patches.json` toe (Samsung → LG, `tizen` → `webos`) en zet de platformlaag erbij;
+- `tools/build_app.py` haalt `tizen/` uit de openbare repo [bingr-android](https://github.com/LRvdLinden/bingr-android) op **precies de commit** uit `upstream.properties` (anoniem, geen token), vult de platformlaag `B.platform` van de gedeelde code met `platform/webos-platform.js` (LG TV, `webos`, model en webOS-versie via Luna), past de paar vervangingen uit `platform/patches.json` toe (index.html, trailer-relay) en zet de rest van de platformlaag erbij;
 - `platform/webos.js`: apparaatnaam *LG TV (model)*, platform `webos`, systeeminfo via de Luna-service, Magic Remote, de speler (eigen video van de tv met mpegts.js als terugval voor TS), afsluiten;
 - `tools/package.sh` maakt er met de webOS CLI (`ares-package`) een `.ipk` van.
 

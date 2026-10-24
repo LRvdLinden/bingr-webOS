@@ -117,6 +117,30 @@ eq('gelukt: niet opnieuw', W.supportRetryBody(body, { status: 200, json: { ok: t
 eq('app_list: niet opnieuw', W.supportRetryBody({ action: 'app_list' }, { status: 400, json: { error: 'bad_platform' } }), null);
 eq('al zonder platform: niet nog eens', W.supportRetryBody({ action: 'app_reply', number: 1, message: 'x' }, { status: 400, json: { error: 'bad_platform' } }), null);
 
+// merkteksten
+eq('toLG nl', W.toLG('Dit soort server werkt nog niet op Samsung TV.'), 'Dit soort server werkt nog niet op LG TV.');
+eq('toLG fr', W.toLG('Une TV Samsung a un seul lecteur'), 'Une TV LG a un seul lecteur');
+eq('toLG leeg', W.toLG(null), '');
+
+// B.platform (platform/webos-platform.js) in een nep-venster met PalmSystem en PalmServiceBridge
+var vm = require('vm');
+var store = {};
+var sandbox = { B: { webosLogic: W }, navigator: { userAgent: UA6 }, setTimeout: setTimeout, Promise: Promise, JSON: JSON,
+  localStorage: { getItem: function (k) { return store[k] || null; }, setItem: function (k, v) { store[k] = String(v); } },
+  PalmSystem: { deviceInfo: '{"modelName":"OLED48C1","platformVersion":"6.2.0"}' },
+  close: function () { sandbox.__closed = true; } };
+sandbox.window = sandbox;
+vm.createContext(sandbox);
+vm.runInContext(fs.readFileSync(path.join(__dirname, '..', 'platform', 'webos-platform.js'), 'utf8'), sandbox);
+var P = sandbox.BINGR_PLATFORM;
+eq('platform id/naam/merk/os', [P.id, P.name, P.maker, P.os], ['webos', 'LG TV', 'LG', 'webOS']);
+eq('model uit deviceInfo', P.model(), 'OLED48C1');
+eq('osVersion uit deviceInfo', P.osVersion(), '6.2');
+eq('merkteksten zonder Samsung', /Samsung/.test(P.texts.unsupportedServer + P.texts.multiviewOnePlayer), false);
+P.exit();
+eq('exit = window.close', sandbox.__closed, true);
+var pending = P.ready.then(function () { eq('zonder Luna: model blijft', P.model(), 'OLED48C1'); });
+
 // appinfo.json en versie
 var info = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'appinfo.json'), 'utf8'));
 var props = {};
@@ -128,5 +152,7 @@ eq('Terug naar de app (disableBackHistoryAPI)', info.disableBackHistoryAPI, true
 eq('ACG voor Luna (systeeminfo, netwerk)', info.requiredACG, ['systemconfig.query', 'network.query']);
 eq('resolutie', info.resolution, '1920x1080');
 
-console.log(checks + ' controles, ' + failures + ' fout');
-process.exit(failures ? 1 : 0);
+pending.then(function () {
+  console.log(checks + ' controles, ' + failures + ' fout');
+  process.exit(failures ? 1 : 0);
+});

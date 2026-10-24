@@ -20,73 +20,35 @@
   var WO = B.webos = {};
   var noop = function () {};
 
-  // MARK: systeeminfo
+  var P = B.platform;
+  WO.info = P.info;
+  WO.model = P.model;
+  WO.luna = P.luna;
+  WO.ready = P.ready;
 
-  var info = B.store.get('webos.info', null) || {};
-  function merge(o) {
-    var changed = false;
-    for (var k in o) if (o.hasOwnProperty(k) && o[k] && info[k] !== o[k]) { info[k] = o[k]; changed = true; }
-    if (changed) B.store.set('webos.info', info);
-  }
-  try {
-    var ps = window.webOSSystem || window.PalmSystem;
-    if (ps && ps.deviceInfo) merge(W.parseDeviceInfo(ps.deviceInfo));
-  } catch (e) { /* buiten de tv */ }
+  // MARK: merkteksten (B.platform.texts): vertaald met de bestaande Samsung-vertalingen, "Samsung" → "LG"
 
-  var bridges = []; // houd de bridge vast tot het antwoord er is (anders ruimt de garbage collector hem op)
-  /** Luna-aanroep via PalmServiceBridge; Promise met het antwoord, of null (geen tv, fout of na ms geen antwoord). */
-  WO.luna = function (uri, params, ms) {
-    return new Promise(function (resolve) {
-      var Bridge = window.PalmServiceBridge;
-      if (!Bridge) { resolve(null); return; }
-      var done = false, br;
-      function finish(v) {
-        if (done) return;
-        done = true;
-        var i = bridges.indexOf(br);
-        if (i >= 0) bridges.splice(i, 1);
-        resolve(v);
-      }
-      try {
-        br = new Bridge();
-        bridges.push(br);
-        br.onservicecallback = function (msg) {
-          var r = null;
-          try { r = typeof msg === 'string' ? JSON.parse(msg) : msg; } catch (e) { r = null; }
-          finish(r);
-        };
-        br.call(uri, JSON.stringify(params || {}));
-      } catch (e) { finish(null); return; }
-      setTimeout(function () { finish(null); }, ms || 4000);
-    });
+  var SAMSUNG = {};
+  SAMSUNG[P.texts.unsupportedServer] = 'This kind of server is not supported on Samsung TV yet.';
+  SAMSUNG[P.texts.multiviewOnePlayer] = 'A Samsung TV has one full video player: the tile with sound uses it, the other tiles play muted where the TV can.';
+  var L0 = B.L;
+  B.L = function (key) {
+    if (!SAMSUNG.hasOwnProperty(key) || B.lang === 'en') return L0.apply(null, arguments);
+    var args = Array.prototype.slice.call(arguments);
+    args[0] = SAMSUNG[key];
+    var t = L0.apply(null, args);
+    return t === SAMSUNG[key] ? key : W.toLG(t);
   };
-  WO.ready = WO.luna('luna://com.webos.service.tv.systemproperty/getSystemInfo',
-    { keys: ['modelName', 'firmwareVersion', 'sdkVersion'] }).then(function (r) { merge(W.parseSystemInfo(r)); return info; });
-  WO.info = function () { return info; };
-  WO.model = function () { return info.modelName || ''; };
-  WO.networkType = function () {
-    return WO.luna('luna://com.palm.connectionmanager/getStatus', {}, 3000).then(function (r) { return W.networkType(r); });
-  };
-  function ua() { return (navigator && navigator.userAgent) || ''; }
 
-  // MARK: apparaat (account.js)
+  // MARK: diagnose (support.js): soort verbinding via de Luna-service (schema 1 network.type, schema 2 DG.netType)
 
-  A.model = function () { return WO.model(); };
-  A.deviceName = function () { return 'LG TV'; };
-  A.deviceDisplayName = function () { return W.deviceName(WO.model()); };
-  A.osVersion = function () { return W.osLabel(info, ua()); };
-  var platformLabel = A.platformLabel;
-  A.platformLabel = function (p) { return W.isWebOSPlatform(p) ? 'LG TV' : platformLabel(p); };
-  var platformIcon = U.platformIcon;
-  U.platformIcon = function (p) { return W.isWebOSPlatform(p) ? 'tv' : platformIcon(p); };
-
-  // MARK: diagnose (support.js)
-
-  DG.osVersion = function () { return W.osVersion(info, ua()); };
+  function setNet(t) { if (t && t !== 'unknown' && t !== 'none' && t !== 'other') DG.netType = t; return t; }
+  P.networkType().then(setNet);
   var network = DG.network;
   DG.network = function () {
-    return Promise.all([network(), WO.networkType()]).then(function (r) {
+    return Promise.all([network(), P.networkType()]).then(function (r) {
       var n = r[0];
+      setNet(r[1]);
       if (n && r[1] && r[1] !== 'unknown') {
         n.type = r[1];
         n.online = navigator.onLine !== false && r[1] !== 'none';
@@ -94,6 +56,7 @@
       return n;
     });
   };
+
   WO.engineName = function () { return WO.lastEngine || 'html5'; };
 
   // MARK: support: tijdelijk zonder platform als de server "webos" nog niet kent
@@ -108,13 +71,9 @@
     });
   };
 
-  // MARK: afsluiten en opnieuw starten
+  // MARK: opnieuw starten (afsluiten: B.platform.exit)
 
-  WO.exit = function () {
-    try { window.close(); } catch (e) { /* stil */ }
-    // oudere webOS: PalmSystem.platformBack() gaat naar de launcher als window.close() niets deed
-    setTimeout(function () { try { var p = window.webOSSystem || window.PalmSystem; if (p && p.platformBack) p.platformBack(); } catch (e) { /* stil */ } }, 300);
-  };
+  WO.exit = function () { P.exit(); };
   // handlesRelaunch: de app draaide al en wordt vanuit de launcher opnieuw geopend → naar de voorgrond
   document.addEventListener('webOSRelaunch', function () {
     try { var p = window.webOSSystem || window.PalmSystem; if (p && p.activate) p.activate(); } catch (e) { /* stil */ }

@@ -1,5 +1,5 @@
 {
-  "_uitleg": "Vervangingen in de gedeelde Samsung TV-code (bingr-android/tizen, commit uit upstream.properties) bij het bouwen. Elke 'find' moet precies 'count' keer voorkomen (standaard 1), anders stopt de build: dan is de gedeelde code veranderd en moet deze lijst mee. Alleen teksten en platformnamen; logica hoort in platform/webos.js.",
+  "_uitleg": "Vervangingen in de gedeelde Samsung TV-code (bingr-android/tizen, commit uit upstream.properties) bij het bouwen. Sinds build 147 staat bijna alles in B.platform (platform/webos-platform.js); hier alleen wat buiten die laag valt. Elke 'find' moet precies 'count' keer voorkomen (standaard 1), anders stopt de build: dan is de gedeelde code veranderd en moet deze lijst mee.",
   "patches": [
     {
       "file": "index.html",
@@ -15,82 +15,27 @@
     },
     {
       "file": "index.html",
-      "why": "platformlaag vóór de start",
+      "why": "B.platform voor webOS vóór core.js",
+      "find": "  <script src=\"js/core.js\"></script>\n",
+      "replace": "  <script src=\"js/webos/webos-logic.js\"></script>\n  <script src=\"js/webos/webos-platform.js\"></script>\n  <script src=\"js/core.js\"></script>\n"
+    },
+    {
+      "file": "index.html",
+      "why": "platformlaag (Magic Remote, speler, diagnose) vóór de start",
       "find": "  <script src=\"js/app.js\"></script>\n",
-      "replace": "  <script src=\"js/webos/webos-logic.js\"></script>\n  <script src=\"js/webos/webos.js\"></script>\n  <script src=\"js/app.js\"></script>\n"
+      "replace": "  <script src=\"js/webos/webos.js\"></script>\n  <script src=\"js/app.js\"></script>\n"
     },
     {
-      "file": "js/core.js",
-      "why": "platform bij login, register_device en entitlements",
-      "find": "    platform: 'tizen',\n",
-      "replace": "    platform: 'webos',\n"
-    },
-    {
-      "file": "js/app.js",
-      "why": "afsluiten op webOS",
-      "find": "try { tizen.application.getCurrentApplication().exit(); }",
-      "replace": "try { B.webos.exit(); }"
-    },
-    {
-      "file": "js/support.js",
-      "why": "diagnose-bijlage: app.platform",
-      "find": "return { platform: 'tizen', version:",
-      "replace": "return { platform: 'webos', version:"
-    },
-    {
-      "file": "js/support.js",
-      "why": "diagnose-bijlage: device",
-      "find": "manufacturer: 'Samsung', os: 'Tizen'",
-      "replace": "manufacturer: 'LG', os: 'webOS'"
-    },
-    {
-      "file": "js/support.js",
-      "why": "diagnose-bijlage: engine",
-      "find": "function engine() { return window.webapis && webapis.avplay ? 'avplay' : 'html5'; }",
-      "replace": "function engine() { return B.webos ? B.webos.engineName() : 'html5'; }"
-    },
-    {
-      "file": "js/support.js",
-      "why": "app_create: platform",
-      "find": "device_id: A.deviceId(), platform: 'tizen', app_version:",
-      "replace": "device_id: A.deviceId(), platform: 'webos', app_version:"
-    },
-    {
-      "file": "js/supportui.js",
-      "why": "model in de diagnose",
-      "find": "DG.model() ? 'Samsung ' + DG.model() : 'Samsung TV'",
-      "replace": "DG.model() ? 'LG ' + DG.model() : 'LG TV'"
-    },
-    {
-      "file": "js/supportui.js",
-      "why": "systeem in de diagnose",
-      "find": "row(L('System'), 'Tizen ' + DG.osVersion(), null);",
-      "replace": "row(L('System'), 'webOS ' + DG.osVersion(), null);"
-    },
-    {
-      "file": "js/supportui.js",
-      "why": "onderwerp van een ticket met diagnose",
-      "find": "' · Samsung ' + (DG.model() || 'TV')",
-      "replace": "' · LG ' + (DG.model() || 'TV')",
-      "count": 2
+      "file": "js/parity.js",
+      "why": "trailer-relay: app-naam",
+      "find": "'&app=tizen'",
+      "replace": "'&app=webos'"
     },
     {
       "file": "js/screens.js",
-      "why": "Instellingen → Over",
-      "find": "'Samsung TV · Tizen'",
-      "replace": "'LG TV · webOS'"
-    },
-    {
-      "file": "js/mediaservers.js",
-      "why": "apparaatnaam bij Jellyfin/Emby",
-      "find": "Device=\"Samsung TV\"",
-      "replace": "Device=\"LG TV\""
-    },
-    {
-      "file": "js/mediaservers.js",
-      "why": "apparaatnaam bij Plex",
-      "find": "'X-Plex-Device-Name': 'Samsung TV', 'X-Plex-Platform': 'Tizen'",
-      "replace": "'X-Plex-Device-Name': 'LG TV', 'X-Plex-Platform': 'webOS'"
+      "why": "trailer-relay: app-naam",
+      "find": "'&app=tizen'",
+      "replace": "'&app=webos'"
     }
   ]
 }

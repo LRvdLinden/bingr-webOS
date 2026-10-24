@@ -54,7 +54,8 @@ CARD = 'Array.prototype.filter.call(B.ui.top().el.querySelectorAll(".row-track .
 
 steps = [
     ('wait', 2500), ('shot', 'webos-01-profiles'),
-    ('expect', 'B.config.platform === "webos"', 'platform webos'),
+    ('expect', 'B.config.platform === "webos" && B.platform.id === "webos" && B.platform.maker === "LG"', 'B.platform webos (LG)'),
+    ('expect', '(function () { var a = B.L(B.platform.texts.unsupportedServer), b = B.L(B.platform.texts.multiviewOnePlayer); return a.indexOf("LG") >= 0 && b.indexOf("LG") >= 0 && !/Samsung/.test(a + b) && (B.lang === "en" || a !== B.platform.texts.unsupportedServer); })()', 'merkteksten vertaald met LG'),
     ('expect', 'B.config.build === "%s"' % open(os.path.join(ROOT, 'version.properties')).read().split('BINGR_BUILD=')[1].split()[0], 'buildnummer uit version.properties'),
     ('key', 'Enter', 400), ('wait', 4000), ('shot', 'webos-02-home'),
     ('expect', 'B.account.deviceDisplayName() === "LG TV (OLED55C36LC)"', 'apparaatnaam LG TV (model)'),
@@ -78,6 +79,7 @@ steps = [
     ('expect', 'window.__diag && window.__diag.app.platform === "webos"', 'diagnose: app.platform webos'),
     ('expect', 'window.__diag.device.manufacturer === "LG" && window.__diag.device.os === "webOS" && window.__diag.device.osVersion === "6.3" && window.__diag.device.model === "OLED55C36LC" && window.__diag.device.type === "tv"', 'diagnose: LG, webOS 6.3, model'),
     ('expect', 'window.__diag.state.network.type === "ethernet"', 'diagnose: netwerk via connectionmanager'),
+    ('expect', 'window.__diag.schema === 2 && !!window.__diag.start && Array.isArray(window.__diag.fetch) && window.__diag.network && window.__diag.network.type === "ethernet" && !!window.__diag.storage', 'diagnose-schema 2 (start, fetch, network, storage)'),
     ('eval', 'JSON.stringify(window.__diag.app) + " " + JSON.stringify(window.__diag.device)', 'diagnose'),
     ('eval', 'B.ui.top().show("settings", true) || 1'), ('wait', 800),
     ('eval', 'var t = Array.prototype.filter.call(document.querySelectorAll(".st-tab"), function (x) { return x._tab === "diagnose"; })[0]; window.__tab = t; 1'),
@@ -86,7 +88,7 @@ steps = [
     ('expect', '(function () { var t = document.querySelector(".page.settings").textContent; return t.indexOf("LG OLED55C36LC") >= 0 && t.indexOf("webOS 6.3") >= 0 && t.indexOf("Tizen") < 0 && t.indexOf("Samsung") < 0; })()', 'Diagnose-tab: LG-model en webOS 6.3, geen Tizen/Samsung'),
     ('eval', 'var t = Array.prototype.filter.call(document.querySelectorAll(".st-tab"), function (x) { return x._tab === "about"; })[0]; B.ui.focus(t, true); 1'),
     ('key', 'Enter', 800), ('shot', 'webos-04b-about'),
-    ('expect', 'document.querySelector(".page.settings").textContent.indexOf("LG TV · webOS") >= 0', 'Over: LG TV · webOS'),
+    ('expect', 'document.querySelector(".page.settings").textContent.indexOf("LG TV · webOS") >= 0 && document.body.textContent.indexOf("Samsung") < 0', 'Over: LG TV · webOS, nergens Samsung'),
     ('eval', 'B.support.create("Test vanaf LG", "apps", "Dit is een testbericht van de rooktest.", null).then(function (r) { window.__ticket = r; return 1; })'), ('wait', 1500),
     ('expect', '!!(window.__ticket && window.__ticket.number)', 'support: nieuw ticket'),
     # speler: eigen video (HLS/MP4/TS); mpegts.js te laden voor TS

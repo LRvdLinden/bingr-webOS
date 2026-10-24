@@ -15,6 +15,9 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.abspath(sys.argv[1] if len(sys.argv) > 1 else os.path.join(ROOT, 'build', 'smoke'))
 APP = os.path.abspath(sys.argv[2] if len(sys.argv) > 2 else os.path.join(ROOT, 'build', 'app'))
 UPTEST = os.path.join(ROOT, '.upstream', 'tizen', 'test')
+import shutil  # noqa: E402
+if not shutil.which('ffmpeg'):
+    raise SystemExit('ffmpeg ontbreekt: nodig voor het testfilmpje van de neppe backend')
 if not os.path.exists(os.path.join(APP, 'index.html')):
     raise SystemExit('geen app in %s: eerst python3 tools/build_app.py' % APP)
 os.environ['BINGR_TIZEN_DIR'] = APP
@@ -91,6 +94,7 @@ steps = [
     ('eval', 'B.screens.openItem("channel", B.lib.lib.channels[0]) || 1'), ('wait', 3000), ('shot', 'webos-05-player'),
     ('expect', '!!B.player.current && (document.getElementById("html-video").currentSrc || "").indexOf("xtream.test") >= 0', 'live kijken met de eigen video'),
     ('expect', 'B.webos.engineName() === "html5"', 'engine html5'),
+    ('expect', 'getComputedStyle(document.querySelector(".pl-error")).display === "none"', 'speler zonder foutscherm (testfilmpje speelt)'),
     ('tv', '19', 400), ('expect', 'document.getElementById("html-video").paused', 'pauze (19)'),
     ('tv', '415', 400), ('expect', '!document.getElementById("html-video").paused', 'afspelen (415)'),
     ('tv', '413', 800), ('expect', '!B.player.current', 'stop (413) sluit de speler'),

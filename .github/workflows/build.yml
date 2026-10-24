@@ -86,6 +86,8 @@ jobs:
       - name: Rooktest (headless Chromium, neppe backend)
         run: |
           set -eo pipefail
+          # ffmpeg maakt het testfilmpje (VP9) van de neppe backend; zonder filmpje geven de streams een 404
+          command -v ffmpeg >/dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg > "$RUNNER_TEMP/logs/apt.log" 2>&1; }
           python3 -m pip install --quiet --disable-pip-version-check playwright==1.56.0 pillow==11.3.0 2>&1 | tail -3
           python3 -m playwright install --with-deps chromium > "$RUNNER_TEMP/logs/playwright.log" 2>&1 || { tail -20 "$RUNNER_TEMP/logs/playwright.log"; exit 1; }
           python3 test/smoke.py "$RUNNER_TEMP/smoke" build/app 2>&1 | tee "$RUNNER_TEMP/logs/smoke.log"

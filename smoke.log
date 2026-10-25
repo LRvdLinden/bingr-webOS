@@ -1,0 +1,80 @@
+EXPECT B.platform webos (LG) OK
+EXPECT merkteksten vertaald met LG OK
+EXPECT buildnummer uit version.properties OK
+EXPECT apparaatnaam LG TV (model) OK
+EXPECT systeemversie webOS 6.3 (Luna getSystemInfo) OK
+EXPECT Luna getSystemInfo aangeroepen OK
+EXPECT platformlabel en icoon OK
+EXPECT geen AVPlay-plugin OK
+WALK Home: rondlopen met de pijltjes OK
+EXPECT cursor op een kaart = focus OK
+window.__n = B.ui.stack.length; 1 => 1
+(function () { var el = B.ui.focused; if (!el) return "geen element"; el.dispatchEvent(new => 1
+EXPECT klik op de kaart opent hem OK
+WALK details: rondlopen OK
+EXPECT Terug (461) sluit de details OK
+window.__f = B.ui.focused; document.dispatchEvent(new WheelEvent("wheel", {deltaY: 120, bu => 1
+EXPECT scrollwiel = omlaag OK
+B.diag.app().then(function (d) { window.__diag = d; return 1; }) => 1
+EXPECT diagnose: app.platform webos OK
+EXPECT diagnose: LG, webOS 6.3, model OK
+EXPECT diagnose: netwerk via connectionmanager OK
+EXPECT diagnose-schema 2+ (start, fetch, network, storage) OK
+diagnose => {"platform":"webos","version":"1.0.1","build":151,"engine":"html5","lang":"nl"} {"type":"tv","manufacturer":"LG","os":"webOS","osVersion":"6.3","language":"nl-US","model":"OLED55C36LC","screen":"1920x1080"}
+B.ui.top().show("settings", true) || 1 => 1
+var t = Array.prototype.filter.call(document.querySelectorAll(".st-tab"), function (x) { r => 1
+EXPECT cursor op de tab Diagnose = focus OK
+(function () { var el = window.__tab; if (!el) return "geen element"; el.dispatchEvent(new => 1
+EXPECT Diagnose-tab: LG-model en webOS 6.3, geen Tizen/Samsung OK
+var t = Array.prototype.filter.call(document.querySelectorAll(".st-tab"), function (x) { r => 1
+EXPECT Over: LG TV · webOS, nergens Samsung OK
+B.support.create("Test vanaf LG", "apps", "Dit is een testbericht van de rooktest.", null) => 1
+EXPECT support: nieuw ticket OK
+B.ui.popTo(B.ui.stack[0]) || 1 => 1
+B.screens.openItem("channel", B.lib.lib.channels[0]) || 1 => 1
+EXPECT live kijken met de eigen video OK
+EXPECT engine html5 OK
+EXPECT speler zonder foutscherm (testfilmpje speelt) OK
+EXPECT pauze (19) OK
+EXPECT afspelen (415) OK
+EXPECT stop (413) sluit de speler OK
+B.webos.loadMpegts().then(function (m) { window.__mp = !!(m && m.createPlayer && m.Events) => 1
+EXPECT mpegts.js laadt (js/lib/mpegts.js) OK
+mpegts.isSupported() in deze Chromium => undefined
+B.webos.exit() || 1 => 1
+EXPECT afsluiten via window.close OK
+
+== Samenvatting (webOS) ==
+OK   B.platform webos (LG)
+OK   merkteksten vertaald met LG
+OK   buildnummer uit version.properties
+OK   apparaatnaam LG TV (model)
+OK   systeemversie webOS 6.3 (Luna getSystemInfo)
+OK   Luna getSystemInfo aangeroepen
+OK   platformlabel en icoon
+OK   geen AVPlay-plugin
+OK   Home: rondlopen met de pijltjes
+OK   cursor op een kaart = focus
+OK   klik op de kaart opent hem
+OK   details: rondlopen
+OK   Terug (461) sluit de details
+OK   scrollwiel = omlaag
+OK   diagnose: app.platform webos
+OK   diagnose: LG, webOS 6.3, model
+OK   diagnose: netwerk via connectionmanager
+OK   diagnose-schema 2+ (start, fetch, network, storage)
+OK   cursor op de tab Diagnose = focus
+OK   Diagnose-tab: LG-model en webOS 6.3, geen Tizen/Samsung
+OK   Over: LG TV · webOS, nergens Samsung
+OK   support: nieuw ticket
+OK   live kijken met de eigen video
+OK   engine html5
+OK   speler zonder foutscherm (testfilmpje speelt)
+OK   pauze (19)
+OK   afspelen (415)
+OK   stop (413) sluit de speler
+OK   mpegts.js laadt (js/lib/mpegts.js)
+OK   afsluiten via window.close
+OK   heartbeat/register_device met os_version webOS
+OK   support app_create (platform webos)
+32 controles, 0 fout, 0 consolefouten

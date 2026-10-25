@@ -1,0 +1,26 @@
+62 controles, 0 fout
+OK: 476 controles geslaagd
+[Bingr] opslag vol pinLockout 25
+[Bingr] opslag vol pinLockout 25
+[Bingr] opslag vol pinLockout 25
+[Bingr] opslag vol pinLockout 25
+[Bingr] opslag vol pinLockout 25
+Build 141 (Samsung TV): alle 66 controles geslaagd
+Build 144 (Samsung TV): alle 37 controles geslaagd
+Build 145 (Samsung TV): alle 49 controles geslaagd
+Build146 (Samsung TV): alle 109 controles geslaagd
+10k films + 1k zenders in stukken: langste stuk 6 ms
+PBKDF2 in stukjes: 72 ms, langste stuk 12 ms
+Build 147 (Samsung TV): alle 85 controles geslaagd
+geheugen ruwe lijsten 37k/12k/9k: vóór (volledige objecten) 34.6 MB, na (lichte objecten) 14.6 MB
+Xtream 37k/12k/9k in stukjes: 379 ms, langste stuk 27 ms
+sorteren 37k in stukken: langste stap 12 ms
+build148: alle 57 controles geslaagd
+datums: 20.000 keer opmaken vóór 661 ms (toLocaleDateString), na 43 ms
+geheugen vóór: 60 MB vastgehouden (165591 items, 180 ms) · na: 12 MB (33119 ingelezen, 132472 verborgen geteld, 140 ms)
+zoeken: eerste keer 43 ms (sleutels maken), daarna 12 ms (24668 titels)
+build149: alle 49 controles geslaagd
+opschonen: 50.000 namen in 248 ms
+build150: alle 170 controles geslaagd
+kiezen: 12.000 zenders in 0 ms
+build151: alle 37 controles geslaagd

@@ -1,0 +1,18 @@
+Version: 3.2.6
+no problems detected
+Create nl.lrvdlinden.bingr_1.0.151_all.ipk to /tmp/tmp.GDpP1JszpM
+Success
+< Package Information >
+Package: nl.lrvdlinden.bingr
+Version: 1.0.151
+Architecture: all
+Installed-Size: 1853372
+app: nl.lrvdlinden.bingr
+
+< Application Information >
+id: nl.lrvdlinden.bingr
+version: 1.0.151
+type: web
+main: index.html
+ipk in orde: nl.lrvdlinden.bingr 1.0.151, 50 bestanden, 0.8 MB
+dist/Bingr-1.0.1-build151.ipk

@@ -19,7 +19,7 @@ import json, os, re, shutil, subprocess, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 UP = os.path.join(ROOT, '.upstream')
-SPARSE = ['tizen/', 'app/src/main/assets/Translations.json']
+SPARSE = ['tizen/', 'app/src/main/assets/Translations.json', 'tools/test/*_cases.json']  # testgevallen die de tizen-tests delen met Android
 
 
 def props(name):

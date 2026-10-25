@@ -1,6 +1,6 @@
 {
   "name": "bingr-webos",
-  "version": "1.0.148",
+  "version": "1.0.149",
   "private": true,
   "description": "Bingr voor LG webOS TV (web-app op basis van de Samsung TV-app in bingr-android/tizen)",
   "license": "UNLICENSED",
